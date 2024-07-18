@@ -3,6 +3,7 @@ import { message } from "telegraf/filters";
 import 'dotenv/config';
 import userModel from './src/models/User.js';
 import connectDb from './src/config/db.js';
+import eventModel from './src/models/Event.js';
 
 
 //make a instance of a bot
@@ -61,6 +62,15 @@ bot.start(async(ctx)=>{
 //on method provided by telegraf library
 bot.on(message('text'),async(ctx)=>{
     // console.log("hello");
+    const from=ctx.update.message.from;
+    const message=ctx.update.message.text;
+
+    try{
+         await eventModel
+    }catch(err){
+
+    }
+
     ctx.reply("Got the messsage");
 });
 
