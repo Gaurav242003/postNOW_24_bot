@@ -12,6 +12,11 @@ const userShema=mongoose.Schema({
         required:true,
     },
 
+    lastName:{
+        type: String,
+        required:false,
+    },
+
     userName:{
         type: String,
         required:false,
