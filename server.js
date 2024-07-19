@@ -69,6 +69,8 @@ bot.start(async(ctx)=>{
 bot.command('generate',async(ctx)=>{
     const from=ctx.update.message.from;
 
+    const {message_id: waitMsgId}=await ctx.reply(`Hey! ${from.first_name}, kindly wait for a moment. I am curating posts for you.`);
+
     const startOfTheDay= new Date();
     startOfTheDay.setHours(0,0,0,0);
     const endOfTheDay= new Date();
@@ -83,6 +85,7 @@ bot.command('generate',async(ctx)=>{
     });
 
     if(events.length === 0){
+        await ctx.deleteMessage(waitMsgId);
         await ctx.reply('No events for the day.');
         return;
     }
@@ -106,15 +109,36 @@ bot.command('generate',async(ctx)=>{
          ],
 
          model: process.env.OPENAI_MODEL
-       })
+       });
+
+       console.log('completion', chatCompletion);
+
+       //store token count
+       await userModel.findOneAndUpdate({
+        tgId:from.id,
+       },
+       {
+         $inc:{
+
+
+            promptTokens: chatCompletion.usage.prompt_tokens,
+            completionTokens: chatCompletion.usage.completion_tokens
+         }
+       }
+    );
+    //delete previous waiting message
+    await ctx.deleteMessage(waitMsgId);
+       //send the response to the user
+    await ctx.reply(chatCompletion.choices[0].message.content);
 
     }catch(err){
-
+        console.log(err);
+        await ctx.deleteMessage(waitMsgId);
+        await ctx.reply("Facing difficulties in calling openAI API. Developer's openai api request quota exceeded.")
     }
-    //store token count
     
-    //send the response to the user
-    await ctx.reply('Doing things...');
+    
+    
 })
 
 //on method provided by telegraf library
